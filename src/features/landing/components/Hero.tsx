@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { SectionContainer } from "@/components/ui/SectionContainer";
+import Link from "next/link";
 
 interface HeroBackgroundProps {
   className?: string;
@@ -56,7 +57,11 @@ function HeroContent({ title, subtitle, ctaText }: HeroContentProps) {
         <span className="text-orange-500">Takaslanabilir!</span>
       </h1>
       <p className="text-xl text-gray-700 mb-8 leading-relaxed">{subtitle}</p>
-      <Button size="lg">{ctaText}</Button>
+      <Link href={"/sign-in"}>
+        <Button size="lg" className="hover:cursor-pointer">
+          {ctaText}
+        </Button>
+      </Link>
     </div>
   );
 }

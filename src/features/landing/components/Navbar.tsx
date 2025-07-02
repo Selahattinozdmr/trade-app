@@ -87,7 +87,7 @@ function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             />
           ))}
           <Link
-            href="/login"
+            href="/sign-in"
             className="block bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg transition-colors text-center font-medium mt-8"
             onClick={onClose}
           >
@@ -118,7 +118,7 @@ export default function Navbar() {
             <NavLink key={item.href} item={item} />
           ))}
           <Link
-            href="/login"
+            href="/sign-in"
             className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors"
           >
             Giriş / Üye Ol
