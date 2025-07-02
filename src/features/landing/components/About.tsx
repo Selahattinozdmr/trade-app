@@ -102,7 +102,7 @@ export default function About() {
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div >
           <p className="text-lg text-gray-700 leading-relaxed">
             {aboutContent.descriptions[2]}
           </p>

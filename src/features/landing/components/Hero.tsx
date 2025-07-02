@@ -52,7 +52,7 @@ function HeroContent({ title, subtitle, ctaText }: HeroContentProps) {
   return (
     <div className="flex-1 lg:pr-12">
       <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-        Her Şey
+        {title}
         <br />
         <span className="text-orange-500">Takaslanabilir!</span>
       </h1>

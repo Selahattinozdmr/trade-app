@@ -4,7 +4,7 @@ import React from "react";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 const SingleUserPage = async ({ params }: Props) => {
@@ -17,7 +17,7 @@ const SingleUserPage = async ({ params }: Props) => {
     redirect("/sign-in");
   }
 
-  const { id } = await params;
+  const { id } = params;
   const currentUserId = session.user.id;
 
   // Check if user is viewing their own profile or someone else's

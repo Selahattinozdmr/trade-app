@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { useSupabase } from "@/components/providers/SupabaseSessionProvider";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -12,6 +12,7 @@ interface Props {
 }
 
 export default function AuthForm({ type }: Props) {
+  const { supabase } = useSupabase();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,27 +40,27 @@ export default function AuthForm({ type }: Props) {
 
     try {
       if (type === "sign-in") {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) {
           setError(getErrorMessage(error.message));
-        } else {
-          router.push("/");
+        } else if (data.user) {
+          router.push(`/profile/${data.user.id}`);
         }
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
         });
 
         if (error) {
           setError(getErrorMessage(error.message));
-        } else {
+        } else if (data.user) {
           setError("");
-          router.push("/");
+          router.push(`/profile/${data.user.id}`);
         }
       }
     } catch (err) {
