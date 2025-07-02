@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function Hero() {
   return (
     <section className="relative bg-gradient-to-br from-orange-100 via-orange-50 to-orange-200 min-h-screen overflow-hidden">
@@ -42,73 +44,14 @@ export default function Hero() {
             Hemen Keşfet
           </button>
         </div>
-
-        <div className="flex-1 flex justify-center lg:justify-end mb-16 lg:mb-0">
-          <div className="relative">
-            {/* Character illustrations */}
-            <div className="flex items-center space-x-8">
-              {/* Left character */}
-              <div className="relative">
-                <div className="w-32 h-40 bg-orange-500 rounded-t-full relative">
-                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-orange-700 rounded-full"></div>
-                  <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-orange-400 rounded-lg flex items-center justify-center">
-                    <div className="w-8 h-6 bg-white rounded"></div>
-                  </div>
-                </div>
-                <div className="w-32 h-24 bg-orange-600 rounded-b-lg"></div>
-              </div>
-
-              {/* Globe in the middle */}
-              <div className="relative z-10">
-                <div className="w-40 h-40 bg-gradient-to-br from-orange-200 to-orange-300 rounded-full flex items-center justify-center shadow-lg">
-                  <div className="w-32 h-32 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full flex items-center justify-center">
-                    <svg
-                      className="w-24 h-24 text-orange-600"
-                      fill="currentColor"
-                      viewBox="0 0 100 100"
-                    >
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      />
-                      <path
-                        d="M20 50 Q35 30 50 50 Q65 70 80 50"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        fill="none"
-                      />
-                      <path
-                        d="M50 20 Q30 35 50 50 Q70 65 50 80"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        fill="none"
-                      />
-                      <circle cx="35" cy="35" r="3" fill="currentColor" />
-                      <circle cx="65" cy="35" r="2" fill="currentColor" />
-                      <circle cx="35" cy="65" r="2" fill="currentColor" />
-                      <circle cx="65" cy="65" r="3" fill="currentColor" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right character */}
-              <div className="relative">
-                <div className="w-32 h-40 bg-orange-500 rounded-t-full relative">
-                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-orange-700 rounded-full"></div>
-                  <div className="absolute top-8 right-2 w-20 h-4 bg-orange-700 rounded-full transform rotate-12"></div>
-                  <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-orange-400 rounded-lg flex items-center justify-center">
-                    <div className="w-2 h-8 bg-orange-700 rounded"></div>
-                  </div>
-                </div>
-                <div className="w-32 h-24 bg-orange-600 rounded-b-lg"></div>
-              </div>
-            </div>
-          </div>
+        <div className="flex-1 flex justify-center lg:justify-end">
+          <Image
+            src={"/images/hero.png"}
+            alt="Hero Image"
+            width={500}
+            height={500}
+            className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl h-auto object-contain"
+          />
         </div>
       </div>
     </section>
