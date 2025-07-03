@@ -11,8 +11,29 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
-      // Redirect to user's profile page after successful OAuth
-      return NextResponse.redirect(`${origin}/profile/${data.user.id}`);
+      // Check if user has profile data, if not create from metadata
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", data.user.id)
+        .single();
+
+      if (!profile && data.user.user_metadata) {
+        // Create profile with sign-up metadata
+        await supabase.from("profiles").insert({
+          id: data.user.id,
+          email: data.user.email,
+          display_name:
+            data.user.user_metadata.display_name ||
+            data.user.user_metadata.full_name ||
+            "User",
+          phone: data.user.user_metadata.phone || "",
+          created_at: new Date().toISOString(),
+        });
+      }
+
+      // Redirect to home page after successful OAuth
+      return NextResponse.redirect(`${origin}/home`);
     }
   }
 

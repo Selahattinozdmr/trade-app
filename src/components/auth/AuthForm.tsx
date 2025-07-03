@@ -17,19 +17,45 @@ export default function AuthForm({ type }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setMessage("");
 
     // Validation for sign-up
-    if (type === "sign-up" && password !== confirmPassword) {
-      setError("Şifreler eşleşmiyor");
-      setLoading(false);
-      return;
+    if (type === "sign-up") {
+      if (password !== confirmPassword) {
+        setError("Şifreler eşleşmiyor");
+        setLoading(false);
+        return;
+      }
+
+      if (!displayName.trim()) {
+        setError("Görünür isim gereklidir");
+        setLoading(false);
+        return;
+      }
+
+      if (!phone.trim()) {
+        setError("Telefon numarası gereklidir");
+        setLoading(false);
+        return;
+      }
+
+      // Phone validation (Turkish format)
+      const phoneRegex = /^(\+90|0)?[1-9]\d{9}$/;
+      if (!phoneRegex.test(phone.replace(/\s/g, ""))) {
+        setError("Geçerli bir telefon numarası girin");
+        setLoading(false);
+        return;
+      }
     }
 
     if (password.length < 6) {
@@ -48,19 +74,26 @@ export default function AuthForm({ type }: Props) {
         if (error) {
           setError(getErrorMessage(error.message));
         } else if (data.user) {
-          router.push(`/profile/${data.user.id}`);
+          router.push("/home");
         }
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            data: {
+              display_name: displayName.trim(),
+              phone: phone.trim(),
+            },
+          },
         });
 
         if (error) {
           setError(getErrorMessage(error.message));
         } else if (data.user) {
-          setError("");
-          router.push(`/profile/${data.user.id}`);
+          // Redirect to email confirmation page
+          router.push("/email-confirmation");
         }
       }
     } catch (err) {
@@ -98,43 +131,52 @@ export default function AuthForm({ type }: Props) {
     const errorMap: Record<string, string> = {
       "Invalid login credentials": "Geçersiz giriş bilgileri",
       "Email not confirmed": "E-posta adresinizi doğrulayın",
+      "User already registered": "Bu e-posta adresi zaten kayıtlı",
       "Password should be at least 6 characters":
         "Şifre en az 6 karakter olmalıdır",
-      "User already registered": "Bu e-posta adresi zaten kayıtlı",
-      "Invalid email": "Geçersiz e-posta adresi",
-      "Email already in use": "Bu e-posta adresi zaten kullanımda",
+      "Signup requires a valid password": "Geçerli bir şifre gereklidir",
+      "Unable to validate email address: invalid format":
+        "Geçersiz e-posta formatı",
+      "Email address not authorized": "E-posta adresi yetkili değil",
     };
 
     return errorMap[message] || message;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo/Brand */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-orange-600 mb-2">Takas App</h1>
-          <p className="text-gray-600">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        {/* Header */}
+        <div className="text-center">
+          <Link
+            href="/"
+            className="flex items-center justify-center space-x-2 mb-8"
+          >
+            <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-2xl">T</span>
+            </div>
+            <span className="text-2xl font-bold text-gray-900">Takas Go</span>
+          </Link>
+          <h2 className="text-3xl font-bold text-gray-900">
+            {type === "sign-in" ? "Hesabınıza Giriş Yapın" : "Hesap Oluşturun"}
+          </h2>
+          <p className="mt-2 text-gray-600">
             {type === "sign-in"
-              ? "Hoş geldiniz! Hesabınıza giriş yapın"
-              : "Başlamak için hesabınızı oluşturun"}
+              ? "Takas dünyasına geri dönün"
+              : "Takas dünyasına katılın"}
           </p>
         </div>
 
         {/* Auth Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-            {type === "sign-in" ? "Giriş Yap" : "Hesap Oluştur"}
-          </h2>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-white py-8 px-6 shadow-xl rounded-xl">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Email Input */}
             <div>
               <label
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                E-posta Adresi
+                E-posta
               </label>
               <input
                 id="email"
@@ -146,6 +188,48 @@ export default function AuthForm({ type }: Props) {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors"
               />
             </div>
+
+            {/* Display Name (Sign Up Only) */}
+            {type === "sign-up" && (
+              <div>
+                <label
+                  htmlFor="displayName"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Görünür İsim
+                </label>
+                <input
+                  id="displayName"
+                  type="text"
+                  placeholder="Görünür isminizi girin"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors"
+                />
+              </div>
+            )}
+
+            {/* Phone Number (Sign Up Only) */}
+            {type === "sign-up" && (
+              <div>
+                <label
+                  htmlFor="phone"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Telefon Numarası
+                </label>
+                <input
+                  id="phone"
+                  type="tel"
+                  placeholder="0505 123 45 67"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors"
+                />
+              </div>
+            )}
 
             {/* Password Input */}
             <div>
@@ -184,6 +268,13 @@ export default function AuthForm({ type }: Props) {
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors"
                 />
+              </div>
+            )}
+
+            {/* Success Message */}
+            {message && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-green-600 text-sm">{message}</p>
               </div>
             )}
 

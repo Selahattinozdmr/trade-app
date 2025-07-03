@@ -10,15 +10,16 @@ interface Props {
 const SingleUserPage = async ({ params }: Props) => {
   const supabase = await createClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (error || !user) {
     redirect("/sign-in");
   }
 
   const { id } = await params;
-  const currentUserId = session.user.id;
+  const currentUserId = user.id;
 
   // Check if user is viewing their own profile or someone else's
   const isOwnProfile = id === currentUserId;
@@ -33,9 +34,13 @@ const SingleUserPage = async ({ params }: Props) => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <ProfileHeader
-          userEmail={session.user.email!}
-          userName={session.user.user_metadata?.full_name}
-          userCreatedAt={session.user.created_at}
+          userEmail={user.email!}
+          userName={
+            user.user_metadata?.display_name || user.user_metadata?.full_name
+          }
+          userCreatedAt={user.created_at}
+          avatarUrl={user.user_metadata?.avatar_url}
+          userId={user.id}
         />
 
         {/* User Details */}
@@ -50,7 +55,7 @@ const SingleUserPage = async ({ params }: Props) => {
                 Kullanıcı ID
               </label>
               <p className="px-4 py-2 bg-gray-50 rounded-lg text-gray-800 font-mono text-sm">
-                {session.user.id}
+                {user.id}
               </p>
             </div>
 
@@ -59,7 +64,7 @@ const SingleUserPage = async ({ params }: Props) => {
                 E-posta
               </label>
               <p className="px-4 py-2 bg-gray-50 rounded-lg text-gray-800">
-                {session.user.email}
+                {user.email}
               </p>
             </div>
 
@@ -69,12 +74,12 @@ const SingleUserPage = async ({ params }: Props) => {
               </label>
               <span
                 className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  session.user.email_confirmed_at
+                  user.email_confirmed_at
                     ? "bg-green-100 text-green-800"
                     : "bg-yellow-100 text-yellow-800"
                 }`}
               >
-                {session.user.email_confirmed_at ? "Doğrulandı" : "Beklemede"}
+                {user.email_confirmed_at ? "Doğrulandı" : "Beklemede"}
               </span>
             </div>
 
@@ -83,10 +88,8 @@ const SingleUserPage = async ({ params }: Props) => {
                 Son Giriş
               </label>
               <p className="px-4 py-2 bg-gray-50 rounded-lg text-gray-800">
-                {session.user.last_sign_in_at
-                  ? new Date(session.user.last_sign_in_at).toLocaleString(
-                      "tr-TR"
-                    )
+                {user.last_sign_in_at
+                  ? new Date(user.last_sign_in_at).toLocaleString("tr-TR")
                   : "Bilinmiyor"}
               </p>
             </div>
@@ -140,7 +143,7 @@ const SingleUserPage = async ({ params }: Props) => {
             Geliştirici Bilgileri
           </h3>
           <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm">
-            {JSON.stringify(session.user, null, 2)}
+            {JSON.stringify(user, null, 2)}
           </pre>
         </div>
       </div>

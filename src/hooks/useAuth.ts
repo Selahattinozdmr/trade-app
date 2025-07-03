@@ -8,6 +8,7 @@ export function useAuth() {
   const signOut = async () => {
     await supabase.auth.signOut();
     router.push("/");
+    router.refresh();
   };
 
   const signInWithEmail = async (email: string, password: string) => {

@@ -1,13 +1,18 @@
-"use client";
-
-import { createBrowserClient } from "@supabase/ssr";
-import { useState, createContext, useContext, useEffect } from "react";
-import type { Session, SupabaseClient } from "@supabase/supabase-js";
+'use client';
+import { createBrowserClient } from '@supabase/ssr';
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  type ReactNode,
+} from 'react';
+import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 
 type SupabaseContext = {
   supabase: SupabaseClient;
   session: Session | null;
-  user: Session["user"] | null;
+  user: User | null;
   loading: boolean;
 };
 
@@ -17,7 +22,7 @@ export function SupabaseProvider({
   children,
   initialSession,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   initialSession: Session | null;
 }) {
   const [supabase] = useState(() =>
@@ -28,15 +33,26 @@ export function SupabaseProvider({
   );
 
   const [session, setSession] = useState<Session | null>(initialSession);
+  const [user, setUser] = useState<User | null>(initialSession?.user ?? null);
   const [loading, setLoading] = useState(!initialSession);
 
   useEffect(() => {
+    const init = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const { data: sessionData } = await supabase.auth.getSession();
+
+      setUser(userData.user);
+      setSession(sessionData.session);
+      setLoading(false);
+    };
+
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session);
-      setLoading(false);
+    } = supabase.auth.onAuthStateChange(() => {
+      init(); // Refresh session and user on auth change
     });
+
+    init(); // Initial load
 
     return () => subscription.unsubscribe();
   }, [supabase]);
@@ -44,7 +60,7 @@ export function SupabaseProvider({
   const value: SupabaseContext = {
     supabase,
     session,
-    user: session?.user ?? null,
+    user,
     loading,
   };
 
@@ -53,8 +69,8 @@ export function SupabaseProvider({
 
 export const useSupabase = () => {
   const context = useContext(Context);
-  if (context === undefined) {
-    throw new Error("useSupabase must be used inside SupabaseProvider");
+  if (!context) {
+    throw new Error('useSupabase must be used inside SupabaseProvider');
   }
   return context;
 };
