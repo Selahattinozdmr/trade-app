@@ -28,7 +28,20 @@ export async function GET(request: NextRequest) {
             data.user.user_metadata.full_name ||
             "User",
           phone: data.user.user_metadata.phone || "",
+          avatar_url: data.user.user_metadata.avatar_url || "",
           created_at: new Date().toISOString(),
+        });
+      } else if (
+        profile &&
+        profile.avatar_url &&
+        data.user.user_metadata.custom_avatar !== false
+      ) {
+        // If user has a custom avatar in profile, preserve it by updating auth metadata
+        await supabase.auth.updateUser({
+          data: {
+            avatar_url: profile.avatar_url,
+            custom_avatar: true,
+          },
         });
       }
 

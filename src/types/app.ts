@@ -21,22 +21,51 @@ export interface MetadataConfig {
   };
 }
 
+// Category types
+export interface Category {
+  id: string;
+  name: string;
+}
+
+// City types
+export interface City {
+  id: number;
+  name: string;
+}
+
 // Item types
 export interface Item {
   id: string;
   user_id: string;
+  category_id?: string;
+  city_id?: number;
   title: string;
   description?: string;
-  city?: string;
-  category?: string;
   image_url?: string;
   is_deal: boolean;
   created_at: string;
+  // Joined data from categories and cities tables
+  categories?: {
+    name: string;
+  };
+  cities?: {
+    name: string;
+  };
+}
+
+// Item form data types
+export interface CreateItemData {
+  title: string;
+  description?: string;
+  category_id?: string;
+  city_id?: number;
+  image_url?: string;
+  is_deal: boolean;
 }
 
 // Filter types
 export interface ItemFilters {
-  city?: string;
+  city?: number;
   category?: string;
   search?: string;
 }

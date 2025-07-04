@@ -108,7 +108,6 @@ export async function middleware(request: NextRequest) {
     "/home",
     "/profile",
     "/items/my",
-    "/items/create",
     "/messages",
     "/settings",
   ];

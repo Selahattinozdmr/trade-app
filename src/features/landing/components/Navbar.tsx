@@ -1,12 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useMobileMenu } from "@/hooks/useMobileMenu";
 import { useScrollLock } from "@/hooks/useScrollLock";
+import { useSupabase } from "@/components/providers/SupabaseSessionProvider";
 import { NAVIGATION_ITEMS, COMPANY_INFO } from "@/lib/constants";
 import { cn } from "@/utils/common";
 import type { NavigationItem } from "@/types";
+import type { User } from "@supabase/supabase-js";
 
 interface NavLinkProps {
   item: NavigationItem;
@@ -30,9 +32,10 @@ function NavLink({ item, onClick, className }: NavLinkProps) {
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  user: User | null;
 }
 
-function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
+function MobileMenu({ isOpen, onClose, user }: MobileMenuProps) {
   return (
     <>
       {/* Mobile Navigation Overlay */}
@@ -86,13 +89,23 @@ function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               className="block text-lg py-2"
             />
           ))}
-          <Link
-            href="/sign-in"
-            className="block bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg transition-colors text-center font-medium mt-8"
-            onClick={onClose}
-          >
-            Giriş / Üye Ol
-          </Link>
+          {user ? (
+            <Link
+              href="/home"
+              className="block bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg transition-colors text-center font-medium mt-8"
+              onClick={onClose}
+            >
+              Ana Sayfa
+            </Link>
+          ) : (
+            <Link
+              href="/sign-in"
+              className="block bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg transition-colors text-center font-medium mt-8"
+              onClick={onClose}
+            >
+              Giriş / Üye Ol
+            </Link>
+          )}
         </nav>
       </div>
     </>
@@ -101,6 +114,29 @@ function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
 export default function Navbar() {
   const mobileMenu = useMobileMenu();
+  const { supabase } = useSupabase();
+  const [user, setUser] = useState<User | null>(null);
+
+  // Check for authenticated user
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    getUser();
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
 
   // Lock scroll when mobile menu is open
   useScrollLock(mobileMenu.isOpen);
@@ -117,12 +153,21 @@ export default function Navbar() {
           {NAVIGATION_ITEMS.map((item) => (
             <NavLink key={item.href} item={item} />
           ))}
-          <Link
-            href="/sign-in"
-            className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            Giriş / Üye Ol
-          </Link>
+          {user ? (
+            <Link
+              href="/home"
+              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Ana Sayfa
+            </Link>
+          ) : (
+            <Link
+              href="/sign-in"
+              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Giriş / Üye Ol
+            </Link>
+          )}
         </nav>
 
         {/* Mobile Menu Button */}
@@ -156,7 +201,11 @@ export default function Navbar() {
         </button>
       </div>
 
-      <MobileMenu isOpen={mobileMenu.isOpen} onClose={mobileMenu.close} />
+      <MobileMenu
+        isOpen={mobileMenu.isOpen}
+        onClose={mobileMenu.close}
+        user={user}
+      />
     </header>
   );
 }

@@ -2,7 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase/client";
+import { SettingsModal } from "@/components/profile/SettingsModal";
 import type { User, ProfileMenuOption } from "@/types/app";
 
 interface ProfileAvatarProps {
@@ -12,6 +14,7 @@ interface ProfileAvatarProps {
 export function ProfileAvatar({ user }: ProfileAvatarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -25,6 +28,15 @@ export function ProfileAvatar({ user }: ProfileAvatarProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const openSettingsModal = () => {
+    setIsSettingsModalOpen(true);
+    setIsOpen(false); // Close dropdown menu
+  };
+
+  const closeSettingsModal = () => {
+    setIsSettingsModalOpen(false);
   };
 
   const menuOptions: ProfileMenuOption[] = [
@@ -68,7 +80,7 @@ export function ProfileAvatar({ user }: ProfileAvatarProps) {
     },
     {
       label: "Ayarlar",
-      href: "/settings",
+      onClick: openSettingsModal,
       icon: ({ className }) => (
         <svg
           className={className}
@@ -144,18 +156,22 @@ export function ProfileAvatar({ user }: ProfileAvatarProps) {
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative " ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 transition-colors"
+        className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
         disabled={isLoading}
       >
         {user.avatar_url ? (
-          <img
-            src={user.avatar_url}
-            alt={user.display_name || user.email}
-            className="w-8 h-8 rounded-full object-cover"
-          />
+          <div className="w-8 h-8 relative rounded-full overflow-hidden">
+            <Image
+              src={user.avatar_url}
+              alt={user.display_name || user.email}
+              fill
+              className="object-cover"
+              sizes="32px"
+            />
+          </div>
         ) : (
           <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
             {getInitials(user.display_name, user.email)}
@@ -218,7 +234,7 @@ export function ProfileAvatar({ user }: ProfileAvatarProps) {
                   setIsOpen(false);
                 }}
                 disabled={isLoading}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className=" cursor-pointer flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 {option.icon && <option.icon className="w-4 h-4 mr-3" />}
                 {option.label}
@@ -230,6 +246,13 @@ export function ProfileAvatar({ user }: ProfileAvatarProps) {
           })}
         </div>
       )}
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={closeSettingsModal}
+        userEmail={user.email}
+      />
     </div>
   );
 }

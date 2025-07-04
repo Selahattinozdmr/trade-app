@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import type { ProfileFormData } from "@/types/app";
@@ -166,16 +167,15 @@ export function EditProfileModal({
               Önizleme
             </label>
             <div className="flex items-center space-x-3">
-              <img
-                src={formData.avatar_url}
-                alt="Avatar preview"
-                className="w-12 h-12 rounded-full object-cover border border-gray-300"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src =
-                    "https://via.placeholder.com/48x48/F97316/FFFFFF?text=?";
-                }}
-              />
+              <div className="w-12 h-12 relative rounded-full border border-gray-300 overflow-hidden">
+                <Image
+                  src={formData.avatar_url}
+                  alt="Avatar preview"
+                  fill
+                  className="object-cover"
+                  sizes="48px"
+                />
+              </div>
               <span className="text-sm text-gray-600">
                 {formData.display_name || "Görünen Ad"}
               </span>

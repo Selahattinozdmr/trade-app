@@ -289,7 +289,7 @@ export default function AuthForm({ type }: Props) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+              className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 cursor-pointer"
             >
               {loading ? (
                 <span className="flex items-center justify-center">
@@ -334,7 +334,7 @@ export default function AuthForm({ type }: Props) {
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full bg-white border border-gray-300 hover:bg-gray-50 disabled:bg-gray-100 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-colors duration-200 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 flex items-center justify-center"
+            className="w-full bg-white border border-gray-300 hover:bg-gray-50 disabled:bg-gray-100 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-colors duration-200 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 flex items-center justify-center cursor-pointer"
           >
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
               <path

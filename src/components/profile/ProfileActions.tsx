@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { EditProfileModal } from "./EditProfileModal";
 import { UserItemsModal } from "./UserItemsModal";
 import { SettingsModal } from "./SettingsModal";
+import { CreateItemModal } from "@/components/items";
 import { updateProfile } from "@/features/profile/actions";
 import type { ProfileFormData } from "@/types/app";
 import type { User } from "@supabase/supabase-js";
@@ -18,6 +19,7 @@ export function ProfileActions({ user, onProfileUpdate }: ProfileActionsProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [itemsModalOpen, setItemsModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [createItemModalOpen, setCreateItemModalOpen] = useState(false);
   const router = useRouter();
 
   const handleProfileSave = async (data: ProfileFormData) => {
@@ -44,6 +46,26 @@ export function ProfileActions({ user, onProfileUpdate }: ProfileActionsProps) {
   };
 
   const actions = [
+    {
+      title: "Yeni İlan Oluştur",
+      description: "Takas için yeni bir ürün ilanı oluşturun",
+      action: () => setCreateItemModalOpen(true),
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+          />
+        </svg>
+      ),
+    },
     {
       title: "Profili Düzenle",
       description: "Profil bilgilerinizi güncelleyin",
@@ -119,7 +141,7 @@ export function ProfileActions({ user, onProfileUpdate }: ProfileActionsProps) {
           Hesap İşlemleri
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {actions.map((action) => (
             <button
               key={action.title}
@@ -161,6 +183,15 @@ export function ProfileActions({ user, onProfileUpdate }: ProfileActionsProps) {
         isOpen={settingsModalOpen}
         onClose={() => setSettingsModalOpen(false)}
         userEmail={user.email!}
+      />
+
+      <CreateItemModal
+        isOpen={createItemModalOpen}
+        onClose={() => setCreateItemModalOpen(false)}
+        onSuccess={() => {
+          // Refresh the page to show the new item
+          router.refresh();
+        }}
       />
     </>
   );

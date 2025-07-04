@@ -30,4 +30,5 @@ export interface AdminItem {
   created_at: string;
   user_id: string;
   user_email?: string | null;
+  image_url?: string | null;
 }

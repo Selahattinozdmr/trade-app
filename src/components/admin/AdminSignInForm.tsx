@@ -127,7 +127,7 @@ export const AdminSignInForm: React.FC = () => {
       <Button
         type="submit"
         disabled={loading}
-        className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+        className="w-full cursor-pointer bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
       >
         {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
       </Button>

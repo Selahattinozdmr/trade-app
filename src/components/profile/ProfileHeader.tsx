@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
+import Image from "next/image";
 import { useSupabase } from "@/components/providers/SupabaseSessionProvider";
 import { uploadAvatar, updateUserAvatar } from "@/utils/avatar";
-import { useState, useRef, ChangeEvent } from "react";
+import { useState, useRef, ChangeEvent, useEffect, useCallback } from "react";
 
 interface ProfileHeaderProps {
   userEmail: string;
@@ -22,12 +22,30 @@ export function ProfileHeader({
   userId,
 }: ProfileHeaderProps) {
   const router = useRouter();
-  const { signOut } = useAuth();
   const { supabase } = useSupabase();
 
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState(avatarUrl);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Refresh avatar from server to get the latest version
+  const refreshAvatar = useCallback(async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user?.user_metadata?.avatar_url) {
+        setCurrentAvatarUrl(user.user_metadata.avatar_url);
+      }
+    } catch (error) {
+      console.error("Error refreshing avatar:", error);
+    }
+  }, [supabase]);
+
+  // Refresh avatar on component mount to get the latest version
+  useEffect(() => {
+    refreshAvatar();
+  }, [refreshAvatar]);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -70,6 +88,9 @@ export function ProfileHeader({
 
       setCurrentAvatarUrl(uploadResult.url);
       if (fileInputRef.current) fileInputRef.current.value = "";
+
+      // Refresh to ensure we have the latest avatar URL
+      await refreshAvatar();
     } catch (error) {
       console.error("Avatar upload error:", error);
       alert("Profil resmi yüklenirken beklenmeyen bir hata oluştu.");
@@ -91,16 +112,15 @@ export function ProfileHeader({
       }
 
       setCurrentAvatarUrl(undefined);
+
+      // Refresh to ensure the removal is reflected
+      await refreshAvatar();
     } catch (error) {
       console.error("Avatar remove error:", error);
       alert("Profil resmi kaldırılırken beklenmeyen bir hata oluştu.");
     } finally {
       setIsUploading(false);
     }
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
   };
 
   return (
@@ -114,12 +134,12 @@ export function ProfileHeader({
           >
             ← Geri
           </button>
-          <button
+          {/* <button
             onClick={handleSignOut}
             className="cursor-pointer px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
           >
             Çıkış Yap
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -130,10 +150,12 @@ export function ProfileHeader({
             onClick={handleAvatarClick}
           >
             {currentAvatarUrl ? (
-              <img
+              <Image
                 src={currentAvatarUrl}
                 alt="Avatar"
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="120px"
               />
             ) : (
               userEmail?.charAt(0).toUpperCase()

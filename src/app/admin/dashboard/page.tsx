@@ -2,7 +2,7 @@ import React from "react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { AdminDashboard } from "@/components/admin";
-import { getDashboardData } from "@/app/admin/actions";
+import { getDashboardData, testDatabaseAccess } from "@/app/admin/actions";
 
 // Force dynamic rendering to avoid build-time issues with admin client
 export const dynamic = "force-dynamic";
@@ -39,6 +39,10 @@ export default async function AdminDashboardPage() {
 
   console.log("Dashboard: Access granted, loading data...");
 
+  // Test database access first
+  const testResult = await testDatabaseAccess();
+  console.log("Database access test result:", testResult);
+
   try {
     const result = await getDashboardData();
 
@@ -52,6 +56,10 @@ export default async function AdminDashboardPage() {
     console.log("Dashboard: Data loaded successfully", {
       stats,
       usersCount: users.length,
+      itemsCount: items.length,
+      firstFewItems: items
+        .slice(0, 3)
+        .map((item) => ({ id: item.id, title: item.title })),
     });
 
     return (

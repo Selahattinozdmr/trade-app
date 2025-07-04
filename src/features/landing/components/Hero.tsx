@@ -1,8 +1,12 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { SectionContainer } from "@/components/ui/SectionContainer";
+import { useSupabase } from "@/components/providers/SupabaseSessionProvider";
 import Link from "next/link";
+import type { User } from "@supabase/supabase-js";
 
 interface HeroBackgroundProps {
   className?: string;
@@ -46,9 +50,12 @@ interface HeroContentProps {
   title: string;
   subtitle: string;
   ctaText: string;
+  user: User | null;
 }
 
-function HeroContent({ title, subtitle, ctaText }: HeroContentProps) {
+function HeroContent({ title, subtitle, ctaText, user }: HeroContentProps) {
+  const linkHref = user ? "/home" : "/sign-in";
+
   return (
     <div className="flex-1 lg:pr-12">
       <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
@@ -57,7 +64,7 @@ function HeroContent({ title, subtitle, ctaText }: HeroContentProps) {
         <span className="text-orange-500">Takaslanabilir!</span>
       </h1>
       <p className="text-xl text-gray-700 mb-8 leading-relaxed">{subtitle}</p>
-      <Link href={"/sign-in"}>
+      <Link href={linkHref}>
         <Button size="lg" className="hover:cursor-pointer">
           {ctaText}
         </Button>
@@ -87,11 +94,35 @@ function HeroImage({ src, alt }: HeroImageProps) {
 }
 
 export default function Hero() {
+  const { supabase } = useSupabase();
+  const [user, setUser] = useState<User | null>(null);
+
+  // Check for authenticated user
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    getUser();
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
+
   const heroData = {
     title: "Her Şey Takaslanabilir!",
     subtitle:
       "Eşyadan hizmete, yetenekten zamana…\nyepyeni bir takas dünyasına hoş geldin!",
-    ctaText: "Hemen Keşfet",
+    ctaText: user ? "Ana Sayfaya Git" : "Hemen Keşfet",
   };
 
   return (
@@ -108,6 +139,7 @@ export default function Hero() {
             title={heroData.title}
             subtitle={heroData.subtitle}
             ctaText={heroData.ctaText}
+            user={user}
           />
           <HeroImage src="/images/hero.png" alt="Hero Image - Trade Platform" />
         </div>

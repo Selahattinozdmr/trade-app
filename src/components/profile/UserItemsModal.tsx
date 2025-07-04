@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
+import { EditItemModal } from "@/components/items";
 import { useSupabase } from "@/components/providers/SupabaseSessionProvider";
 import type { Item } from "@/types/app";
 
@@ -21,6 +23,8 @@ export function UserItemsModal({
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchUserItems = useCallback(async () => {
     if (!isOpen || !userId) return;
@@ -31,7 +35,13 @@ export function UserItemsModal({
     try {
       const { data, error: supabaseError } = await supabase
         .from("items")
-        .select("*")
+        .select(
+          `
+          *,
+          categories(name),
+          cities(name)
+        `
+        )
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
@@ -60,6 +70,21 @@ export function UserItemsModal({
       month: "long",
       day: "numeric",
     });
+  };
+
+  const handleEditItem = (item: Item) => {
+    setEditingItem(item);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditModalClose = () => {
+    setIsEditModalOpen(false);
+    setEditingItem(null);
+  };
+
+  const handleEditSuccess = () => {
+    // Refresh the items list
+    fetchUserItems();
   };
 
   return (
@@ -130,7 +155,6 @@ export function UserItemsModal({
               <h3 className="text-lg font-medium text-gray-900">
                 Toplam {items.length} ilan
               </h3>
-              <Button size="sm">Yeni İlan Ekle</Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -141,11 +165,15 @@ export function UserItemsModal({
                 >
                   <div className="flex items-start space-x-3">
                     {item.image_url ? (
-                      <img
-                        src={item.image_url}
-                        alt={item.title}
-                        className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
-                      />
+                      <div className="w-16 h-16 relative rounded-lg flex-shrink-0 overflow-hidden">
+                        <Image
+                          src={item.image_url}
+                          alt={item.title}
+                          fill
+                          className="object-cover"
+                          sizes="64px"
+                        />
+                      </div>
                     ) : (
                       <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
                         <svg
@@ -174,7 +202,7 @@ export function UserItemsModal({
                         </p>
                       )}
                       <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                        {item.city && (
+                        {item.cities?.name && (
                           <span className="flex items-center">
                             <svg
                               className="w-3 h-3 mr-1"
@@ -195,12 +223,12 @@ export function UserItemsModal({
                                 d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                               />
                             </svg>
-                            {item.city}
+                            {item.cities.name}
                           </span>
                         )}
-                        {item.category && (
+                        {item.categories?.name && (
                           <span className="bg-gray-100 px-2 py-1 rounded-full">
-                            {item.category}
+                            {item.categories.name}
                           </span>
                         )}
                         <span>{formatDate(item.created_at)}</span>
@@ -217,7 +245,10 @@ export function UserItemsModal({
                       >
                         {item.is_deal ? "Takaslandı" : "Aktif"}
                       </span>
-                      <button className="text-xs text-orange-600 hover:text-orange-700 cursor-pointer">
+                      <button
+                        onClick={() => handleEditItem(item)}
+                        className="text-xs text-orange-600 hover:text-orange-700 cursor-pointer"
+                      >
                         Düzenle
                       </button>
                     </div>
@@ -228,6 +259,16 @@ export function UserItemsModal({
           </div>
         )}
       </div>
+
+      {/* Edit Item Modal */}
+      {editingItem && (
+        <EditItemModal
+          isOpen={isEditModalOpen}
+          onClose={handleEditModalClose}
+          onSuccess={handleEditSuccess}
+          item={editingItem}
+        />
+      )}
     </Modal>
   );
 }

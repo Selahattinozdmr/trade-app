@@ -31,7 +31,6 @@ export function SettingsModal({
 
   // Notification states
   const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(false);
 
   // Message states
   const [successMessage, setSuccessMessage] = useState("");
@@ -195,25 +194,6 @@ export function SettingsModal({
       setErrorMessage("Bildirim ayarları güncellenirken hata oluştu");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handlePushNotificationToggle = async () => {
-    if (!pushNotifications) {
-      try {
-        const permission = await Notification.requestPermission();
-        if (permission === "granted") {
-          setPushNotifications(true);
-          setSuccessMessage("Push bildirimleri açıldı");
-        } else {
-          setErrorMessage("Push bildirim izni reddedildi");
-        }
-      } catch {
-        setErrorMessage("Push bildirimler bu tarayıcıda desteklenmiyor");
-      }
-    } else {
-      setPushNotifications(false);
-      setSuccessMessage("Push bildirimleri kapatıldı");
     }
   };
 
@@ -519,45 +499,6 @@ export function SettingsModal({
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     emailNotifications ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
-
-            {/* Push Notifications */}
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="text-gray-500">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 17h5l-5 5v-5zM4 12H2a10 10 0 0020 0h-2"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900">
-                    Push Bildirimleri
-                  </h4>
-                  <p className="text-sm text-gray-500">Tarayıcı bildirimleri</p>
-                </div>
-              </div>
-              <button
-                onClick={handlePushNotificationToggle}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer ${
-                  pushNotifications ? "bg-blue-600" : "bg-gray-200"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    pushNotifications ? "translate-x-6" : "translate-x-1"
                   }`}
                 />
               </button>

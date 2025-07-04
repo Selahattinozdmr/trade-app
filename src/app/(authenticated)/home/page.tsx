@@ -5,6 +5,7 @@ import { getItems } from "@/features/items/actions";
 import { FilterBar } from "@/features/items/components/FilterBar";
 import { ItemCard } from "@/features/items/components/ItemCard";
 import { Header } from "@/features/items/components/Header";
+import { CreateItemLink } from "@/components/items";
 import type { PageProps, User, ItemFilters } from "@/types/app";
 
 // Loading components
@@ -39,8 +40,11 @@ async function ItemsContent({
   const params = await searchParams;
   const filters: ItemFilters = {};
 
-  if (typeof params.city === "string") {
-    filters.city = params.city;
+  if (typeof params.city === "string" && params.city) {
+    const cityId = parseInt(params.city);
+    if (!isNaN(cityId)) {
+      filters.city = cityId;
+    }
   }
   if (typeof params.category === "string") {
     filters.category = params.category;
@@ -118,8 +122,36 @@ export default async function HomePage({ searchParams }: PageProps) {
     created_at: authUser.created_at,
   };
 
+  // Get statistics from database
+  const [
+    { count: activeUsersCount },
+    { count: activeItemsCount },
+    { count: successfulTradesCount },
+  ] = await Promise.all([
+    // Count active users (users who have logged in within last 30 days)
+    supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .gte(
+        "updated_at",
+        new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+      ),
+
+    // Count active items
+    supabase
+      .from("items")
+      .select("*", { count: "exact", head: true })
+      .eq("is_deal", false),
+
+    // Count successful trades (items marked as deals)
+    supabase
+      .from("items")
+      .select("*", { count: "exact", head: true })
+      .eq("is_deal", true),
+  ]);
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
       {/* Header */}
       <Header user={user} />
 
@@ -128,7 +160,7 @@ export default async function HomePage({ searchParams }: PageProps) {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Hoş Geldiniz! 👋
+            Hoş Geldiniz!
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Takas Go ile istediğiniz ürünleri bulun, ihtiyacınız olmayanları
@@ -166,7 +198,9 @@ export default async function HomePage({ searchParams }: PageProps) {
                 <p className="text-sm font-medium text-gray-500">
                   Aktif Kullanıcı
                 </p>
-                <p className="text-2xl font-semibold text-gray-900">1,000+</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {activeUsersCount || 0}
+                </p>
               </div>
             </div>
           </div>
@@ -194,7 +228,9 @@ export default async function HomePage({ searchParams }: PageProps) {
                 <p className="text-sm font-medium text-gray-500">
                   Başarılı Takas
                 </p>
-                <p className="text-2xl font-semibold text-gray-900">500+</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {successfulTradesCount || 0}
+                </p>
               </div>
             </div>
           </div>
@@ -220,7 +256,9 @@ export default async function HomePage({ searchParams }: PageProps) {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Aktif İlan</p>
-                <p className="text-2xl font-semibold text-gray-900">250+</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {activeItemsCount || 0}
+                </p>
               </div>
             </div>
           </div>
@@ -230,25 +268,7 @@ export default async function HomePage({ searchParams }: PageProps) {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Son İlanlar</h2>
-            <a
-              href="/items/create"
-              className="text-orange-600 hover:text-orange-700 font-medium flex items-center gap-2"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-              İlan Ver
-            </a>
+            <CreateItemLink />
           </div>
 
           <Suspense fallback={<ItemsLoading />}>
