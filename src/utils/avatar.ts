@@ -46,11 +46,12 @@ export async function updateUserAvatar(
   avatarUrl: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Update both auth metadata and profiles table to ensure persistence
+    // Update auth metadata with custom avatar in a separate field
+    // This way we don't overwrite the original Google avatar_url
     const { error: authError } = await supabase.auth.updateUser({
       data: {
-        avatar_url: avatarUrl,
         custom_avatar: avatarUrl ? true : false, // Flag to indicate user has set custom avatar
+        custom_avatar_url: avatarUrl, // Store custom avatar in separate field
       },
     });
 
@@ -59,21 +60,6 @@ export async function updateUserAvatar(
         success: false,
         error: `Auth güncelleme hatası: ${authError.message}`,
       };
-    }
-
-    // Also update the profiles table for redundancy
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .upsert({
-        id: userId,
-        avatar_url: avatarUrl,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", userId);
-
-    if (profileError) {
-      console.warn("Profil güncellenemedi:", profileError);
-      // Don't fail the operation if profiles table update fails
     }
 
     return { success: true };

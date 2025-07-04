@@ -24,28 +24,85 @@ export function ProfileHeader({
   const router = useRouter();
   const { supabase } = useSupabase();
 
-  const [currentAvatarUrl, setCurrentAvatarUrl] = useState(avatarUrl);
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string | undefined>(
+    undefined
+  );
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize avatar on component mount
+  useEffect(() => {
+    const initializeAvatar = async () => {
+      try {
+        // Get current user to check for custom avatar flag
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) return;
+
+        // If user has custom_avatar flag set to true, use the stored custom avatar
+        if (
+          user.user_metadata?.custom_avatar &&
+          user.user_metadata?.custom_avatar_url
+        ) {
+          setCurrentAvatarUrl(user.user_metadata.custom_avatar_url);
+        }
+        // If no custom avatar but has Google avatar, use Google avatar
+        else if (user.user_metadata?.avatar_url) {
+          setCurrentAvatarUrl(user.user_metadata.avatar_url);
+        }
+        // If avatarUrl was passed as prop, use it as fallback
+        else if (avatarUrl) {
+          setCurrentAvatarUrl(avatarUrl);
+        }
+      } catch (error) {
+        console.error("Error initializing avatar:", error);
+        // Fall back to passed avatarUrl if there's an error
+        if (avatarUrl) {
+          setCurrentAvatarUrl(avatarUrl);
+        }
+      }
+    };
+
+    initializeAvatar();
+  }, [supabase, userId, avatarUrl]);
 
   // Refresh avatar from server to get the latest version
   const refreshAvatar = useCallback(async () => {
     try {
+      // Get current user to check for custom avatar
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (user?.user_metadata?.avatar_url) {
+
+      if (!user) return;
+
+      // If user has custom_avatar flag set to true, use the stored custom avatar
+      if (
+        user.user_metadata?.custom_avatar &&
+        user.user_metadata?.custom_avatar_url
+      ) {
+        setCurrentAvatarUrl(user.user_metadata.custom_avatar_url);
+      }
+      // If no custom avatar but has Google avatar, use Google avatar
+      else if (user.user_metadata?.avatar_url) {
         setCurrentAvatarUrl(user.user_metadata.avatar_url);
+      }
+      // Fall back to passed avatarUrl
+      else if (avatarUrl) {
+        setCurrentAvatarUrl(avatarUrl);
+      }
+      // No avatar available
+      else {
+        setCurrentAvatarUrl(undefined);
       }
     } catch (error) {
       console.error("Error refreshing avatar:", error);
     }
-  }, [supabase]);
+  }, [supabase, avatarUrl]);
 
   // Refresh avatar on component mount to get the latest version
-  useEffect(() => {
-    refreshAvatar();
-  }, [refreshAvatar]);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -105,15 +162,21 @@ export function ProfileHeader({
     setIsUploading(true);
 
     try {
-      const updateResult = await updateUserAvatar(supabase, userId, "");
-      if (!updateResult.success) {
-        alert(updateResult.error || "Profil resmi kaldırma hatası.");
+      // Clear the custom avatar fields and reset the custom_avatar flag
+      // This will allow the Google avatar to show again
+      const { error: authError } = await supabase.auth.updateUser({
+        data: {
+          custom_avatar: false, // Reset flag so Google avatar can be used again
+          custom_avatar_url: "", // Clear the custom avatar URL
+        },
+      });
+
+      if (authError) {
+        alert("Auth güncelleme hatası: " + authError.message);
         return;
       }
 
-      setCurrentAvatarUrl(undefined);
-
-      // Refresh to ensure the removal is reflected
+      // Refresh to get Google avatar back if available
       await refreshAvatar();
     } catch (error) {
       console.error("Avatar remove error:", error);
@@ -221,7 +284,7 @@ export function ProfileHeader({
           <h2 className="text-xl font-semibold text-gray-800">
             {userName || userEmail}
           </h2>
-          <p className="text-gray-600">{userEmail}</p>
+          <p className="text-gray-600 truncate">{userEmail}</p>
           <p className="text-sm text-gray-500">
             Üyelik: {new Date(userCreatedAt).toLocaleDateString("tr-TR")}
           </p>

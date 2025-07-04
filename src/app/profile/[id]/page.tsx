@@ -39,19 +39,14 @@ const SingleUserPage = async ({ params }: Props) => {
     .eq("user_id", user.id);
 
   // Get user profile data for header
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
+  // Note: We don't have a profiles table, so we'll use auth metadata
   const userForHeader: User = {
     id: user.id,
     email: user.email!,
     display_name: user.user_metadata.display_name,
     phone: user.user_metadata.phone,
-    full_name: profile?.full_name || user.user_metadata?.full_name,
-    avatar_url: profile?.avatar_url || user.user_metadata?.avatar_url,
+    full_name: user.user_metadata?.full_name,
+    avatar_url: user.user_metadata?.avatar_url,
     created_at: user.created_at,
   };
 
@@ -69,7 +64,6 @@ const SingleUserPage = async ({ params }: Props) => {
               user.user_metadata?.display_name || user.user_metadata?.full_name
             }
             userCreatedAt={user.created_at}
-            avatarUrl={user.user_metadata?.avatar_url}
             userId={user.id}
           />
 

@@ -15,8 +15,49 @@ export function ProfileAvatar({ user }: ProfileAvatarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string | undefined>(
+    undefined
+  );
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // Initialize avatar on component mount
+  useEffect(() => {
+    const initializeAvatar = async () => {
+      try {
+        // Get current user to check for custom avatar flag
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+
+        // If user has custom_avatar flag set to true, use the custom avatar
+        // Otherwise, fall back to the Google avatar if available
+        if (
+          authUser?.user_metadata?.custom_avatar &&
+          authUser?.user_metadata?.custom_avatar_url
+        ) {
+          setCurrentAvatarUrl(authUser.user_metadata.custom_avatar_url);
+        } else if (
+          authUser?.user_metadata?.avatar_url &&
+          !authUser?.user_metadata?.custom_avatar
+        ) {
+          // This is the Google avatar case
+          setCurrentAvatarUrl(authUser.user_metadata.avatar_url);
+        } else if (user.avatar_url) {
+          // Fall back to passed user avatar
+          setCurrentAvatarUrl(user.avatar_url);
+        }
+      } catch (error) {
+        console.error("Error initializing avatar:", error);
+        // Fall back to passed user avatar if there's an error
+        if (user.avatar_url) {
+          setCurrentAvatarUrl(user.avatar_url);
+        }
+      }
+    };
+
+    initializeAvatar();
+  }, [user.avatar_url]);
 
   const handleSignOut = async () => {
     setIsLoading(true);
@@ -162,10 +203,10 @@ export function ProfileAvatar({ user }: ProfileAvatarProps) {
         className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
         disabled={isLoading}
       >
-        {user.avatar_url ? (
+        {currentAvatarUrl ? (
           <div className="w-8 h-8 relative rounded-full overflow-hidden">
             <Image
-              src={user.avatar_url}
+              src={currentAvatarUrl}
               alt={user.display_name || user.email}
               fill
               className="object-cover"
