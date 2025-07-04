@@ -146,7 +146,7 @@ export function ProfileHeader({
       <div className="flex items-center space-x-6">
         <div className="relative group">
           <div
-            className="w-20 h-20 rounded-full overflow-hidden bg-orange-500 flex items-center justify-center text-white text-2xl font-bold cursor-pointer transition-opacity group-hover:opacity-75"
+            className="w-20 h-20 rounded-full overflow-hidden bg-orange-500 flex items-center justify-center text-white text-2xl font-bold cursor-pointer transition-opacity group-hover:opacity-75 "
             onClick={handleAvatarClick}
           >
             {currentAvatarUrl ? (
@@ -154,8 +154,7 @@ export function ProfileHeader({
                 src={currentAvatarUrl}
                 alt="Avatar"
                 fill
-                className="object-cover"
-                sizes="120px"
+                className="object-cover rounded-full"
               />
             ) : (
               userEmail?.charAt(0).toUpperCase()

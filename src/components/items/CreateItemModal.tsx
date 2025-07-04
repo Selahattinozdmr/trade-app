@@ -227,7 +227,7 @@ export function CreateItemModal({
           >
             <option value="">Kategori seçin</option>
             {categories.map((category) => (
-              <option key={category.id} value={category.id} >
+              <option key={category.id} value={category.id}>
                 {category.name}
               </option>
             ))}
