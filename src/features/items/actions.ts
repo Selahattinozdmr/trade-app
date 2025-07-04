@@ -125,6 +125,32 @@ export async function getUserItemsPaginated(
   };
 }
 
+export async function getItemById(itemId: string): Promise<Item | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("items")
+    .select(
+      `
+      *,
+      categories(name),
+      cities(name)
+    `
+    )
+    .eq("id", itemId)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      // Item not found
+      return null;
+    }
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
 export async function deleteItem(itemId: string): Promise<void> {
   const supabase = await createClient();
 

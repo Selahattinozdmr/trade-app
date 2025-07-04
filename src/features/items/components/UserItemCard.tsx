@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import type { Item } from "@/types/app";
 import { EditItemModal } from "@/components/items";
 
@@ -134,7 +135,10 @@ export function UserItemCard({ item, onUpdate, onDelete }: Props) {
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <Link
+          href={`/items/${item.id}`}
+          className="block p-4 hover:bg-gray-50 transition-colors"
+        >
           <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-600 transition-colors">
             {item.title}
           </h3>
@@ -198,7 +202,7 @@ export function UserItemCard({ item, onUpdate, onDelete }: Props) {
               {formatDate(item.created_at)}
             </div>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Edit Modal */}
