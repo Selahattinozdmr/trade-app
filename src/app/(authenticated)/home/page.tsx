@@ -111,6 +111,8 @@ export default async function HomePage({ searchParams }: PageProps) {
   const user: User = {
     id: authUser.id,
     email: authUser.email!,
+    display_name: authUser.user_metadata.display_name,
+    phone: authUser.user_metadata.phone,
     full_name: profile?.full_name || authUser.user_metadata?.full_name,
     avatar_url: profile?.avatar_url || authUser.user_metadata?.avatar_url,
     created_at: authUser.created_at,

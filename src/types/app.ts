@@ -5,7 +5,7 @@ export interface RootLayoutProps {
 
 // Page related types
 export interface PageProps {
-  params?: Record<string, string>;
+  params?: Promise<Record<string, string>>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
@@ -54,11 +54,19 @@ export interface ProfileMenuOption {
 export interface User {
   id: string;
   email: string;
-  full_name?: string;
-  display_name: string;
-  phone: string;
-  avatar_url?: string;
   created_at: string;
+  full_name?: string;
+  display_name?: string;
+  phone?: string;
+  avatar_url?: string;
+  email_confirmed_at?: string;
+  last_sign_in_at?: string;
+  user_metadata?: {
+    display_name?: string;
+    full_name?: string;
+    avatar_url?: string;
+    phone?: string;
+  };
 }
 
 // Profile form types

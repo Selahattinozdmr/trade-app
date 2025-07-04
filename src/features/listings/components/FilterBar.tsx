@@ -139,7 +139,7 @@ export function FilterBar() {
           <div className="flex flex-wrap gap-2">
             {search && (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-orange-100 text-orange-800">
-                Arama: "{search}"
+                Arama: &quot;{search}&quot;
                 <button
                   onClick={() => setSearch("")}
                   className="ml-2 text-orange-600 hover:text-orange-800"

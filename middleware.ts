@@ -37,6 +37,72 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  console.log("Middleware: User check result:", {
+    hasUser: !!user,
+    userId: user?.id,
+    path: request.nextUrl.pathname,
+  });
+
+  // Admin routes
+  const adminPaths = [
+    "/admin/dashboard",
+    "/admin/test",
+    "/admin/simple-dashboard",
+  ];
+  const isAdminPath = adminPaths.some((path) =>
+    request.nextUrl.pathname.startsWith(path)
+  );
+  const isAdminSignIn = request.nextUrl.pathname === "/admin/sign-in";
+
+  // Check admin access for admin routes
+  if (isAdminPath && user) {
+    console.log("Middleware: Checking admin access for user:", user.id);
+    console.log("Middleware: Requested path:", request.nextUrl.pathname);
+
+    const { data: userRole, error: roleError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    console.log("Middleware: Role check result:", { userRole, roleError });
+
+    if (
+      !userRole?.role ||
+      (userRole.role !== "admin" && userRole.role !== "super_admin")
+    ) {
+      console.log("Middleware: Access denied, redirecting to sign-in");
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/sign-in";
+      return NextResponse.redirect(url);
+    }
+
+    console.log("Middleware: Admin access granted for:", userRole.role);
+  }
+
+  // Redirect unauthenticated users from admin routes to admin sign in
+  if (isAdminPath && !user) {
+    console.log("Middleware: No user found, redirecting to admin sign-in");
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/sign-in";
+    return NextResponse.redirect(url);
+  }
+
+  // Redirect authenticated admin users from admin sign in to admin dashboard
+  if (isAdminSignIn && user) {
+    const { data: userRole } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (userRole?.role === "admin" || userRole?.role === "super_admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/dashboard";
+      return NextResponse.redirect(url);
+    }
+  }
+
   // Protected routes
   const protectedPaths = [
     "/home",

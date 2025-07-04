@@ -110,13 +110,13 @@ export function ProfileHeader({
         <div className="flex space-x-3">
           <button
             onClick={() => router.back()}
-            className="px-4 py-2 text-orange-600 hover:text-orange-700 font-medium transition-colors"
+            className="cursor-pointer px-4 py-2 text-orange-600 hover:text-orange-700 font-medium transition-colors"
           >
             ← Geri
           </button>
           <button
             onClick={handleSignOut}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+            className="cursor-pointer px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
           >
             Çıkış Yap
           </button>
@@ -209,7 +209,7 @@ export function ProfileHeader({
             <button
               onClick={handleAvatarClick}
               disabled={isUploading}
-              className="text-sm text-orange-600 hover:text-orange-700 font-medium disabled:opacity-50"
+              className="cursor-pointer text-sm text-orange-600 hover:text-orange-700 font-medium disabled:opacity-50"
             >
               {currentAvatarUrl ? "Resmi Değiştir" : "Resim Ekle"}
             </button>
@@ -219,7 +219,7 @@ export function ProfileHeader({
                 <button
                   onClick={handleRemoveAvatar}
                   disabled={isUploading}
-                  className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
+                  className=" cursor-pointer text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
                 >
                   Resmi Kaldır
                 </button>

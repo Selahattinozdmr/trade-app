@@ -20,7 +20,7 @@ export function Button({
   type = "button",
 }: ButtonProps) {
   const baseStyles =
-    "font-semibold rounded-lg transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl";
+    "cursor-pointer font-semibold rounded-lg transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl";
 
   const variantStyles = {
     primary: "bg-orange-500 hover:bg-orange-600 text-white",
