@@ -165,7 +165,13 @@ export async function deleteItem(itemId: string): Promise<void> {
 // Client-side function for getting user items with pagination
 export async function getUserItemsPaginated(
   userId: string,
-  params: { page?: number; limit?: number } = {}
+  params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    category?: string;
+  } = {}
 ): Promise<{
   data: Item[];
   count: number;
@@ -178,18 +184,14 @@ export async function getUserItemsPaginated(
   const limit = params.limit || 12;
   const offset = (page - 1) * limit;
 
-  // Get total count
-  const { count, error: countError } = await supabase
+  // Build query for count
+  let countQuery = supabase
     .from("items")
     .select("*", { count: "exact", head: true })
     .eq("user_id", userId);
 
-  if (countError) {
-    throw new Error(countError.message);
-  }
-
-  // Get paginated items
-  const { data, error } = await supabase
+  // Build query for data
+  let dataQuery = supabase
     .from("items")
     .select(
       `
@@ -198,7 +200,39 @@ export async function getUserItemsPaginated(
       cities(name)
     `
     )
-    .eq("user_id", userId)
+    .eq("user_id", userId);
+
+  // Apply filters
+  if (params.search) {
+    const searchFilter = `title.ilike.%${params.search}%,description.ilike.%${params.search}%`;
+    countQuery = countQuery.or(searchFilter);
+    dataQuery = dataQuery.or(searchFilter);
+  }
+
+  if (params.status) {
+    if (params.status === "active") {
+      countQuery = countQuery.eq("is_deal", false);
+      dataQuery = dataQuery.eq("is_deal", false);
+    } else if (params.status === "completed") {
+      countQuery = countQuery.eq("is_deal", true);
+      dataQuery = dataQuery.eq("is_deal", true);
+    }
+  }
+
+  if (params.category) {
+    countQuery = countQuery.eq("category_id", params.category);
+    dataQuery = dataQuery.eq("category_id", params.category);
+  }
+
+  // Get total count
+  const { count, error: countError } = await countQuery;
+
+  if (countError) {
+    throw new Error(countError.message);
+  }
+
+  // Get paginated items
+  const { data, error } = await dataQuery
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 

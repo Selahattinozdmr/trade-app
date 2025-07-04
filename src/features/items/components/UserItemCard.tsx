@@ -49,21 +49,21 @@ export function UserItemCard({ item, onUpdate, onDelete }: Props) {
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group hover:-translate-y-1">
         {/* Image */}
-        <div className="relative aspect-[4/3] bg-gray-100">
+        <div className="relative aspect-[4/3] bg-gray-50 overflow-hidden">
           {item.image_url ? (
             <Image
               src={item.image_url}
               alt={item.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover group-hover:scale-110 transition-transform duration-500"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
+            <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gradient-to-br from-gray-50 to-gray-100">
               <svg
-                className="w-12 h-12"
+                className="w-16 h-16"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -71,7 +71,7 @@ export function UserItemCard({ item, onUpdate, onDelete }: Props) {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
@@ -79,12 +79,12 @@ export function UserItemCard({ item, onUpdate, onDelete }: Props) {
           )}
 
           {/* Status badge */}
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-4 right-4">
             <span
-              className={`px-2 py-1 text-xs font-medium rounded-full ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-full backdrop-blur-sm ${
                 item.is_deal
-                  ? "bg-gray-100 text-gray-800"
-                  : "bg-green-100 text-green-800"
+                  ? "bg-gray-900/80 text-white"
+                  : "bg-green-500/90 text-white"
               }`}
             >
               {item.is_deal ? "Pasif" : "Aktif"}
@@ -92,10 +92,14 @@ export function UserItemCard({ item, onUpdate, onDelete }: Props) {
           </div>
 
           {/* Action buttons */}
-          <div className="absolute top-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute top-4 left-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10">
             <button
-              onClick={handleEdit}
-              className="p-2 bg-white/90 hover:bg-white text-gray-600 hover:text-orange-600 rounded-full shadow-sm transition-colors cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleEdit();
+              }}
+              className="cursor-pointer p-2.5 bg-white/95 backdrop-blur-sm hover:bg-white text-gray-600 hover:text-orange-600 rounded-xl shadow-sm transition-all duration-200 hover:scale-110"
               title="Düzenle"
             >
               <svg
@@ -113,8 +117,12 @@ export function UserItemCard({ item, onUpdate, onDelete }: Props) {
               </svg>
             </button>
             <button
-              onClick={handleDelete}
-              className="p-2 bg-white/90 hover:bg-white text-gray-600 hover:text-red-600 rounded-full shadow-sm transition-colors cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleDelete();
+              }}
+              className="p-2.5 bg-white/95 backdrop-blur-sm hover:bg-white text-gray-600 hover:text-red-600 rounded-xl shadow-sm transition-all duration-200 hover:scale-110 cursor-pointer"
               title="Sil"
             >
               <svg
@@ -132,26 +140,32 @@ export function UserItemCard({ item, onUpdate, onDelete }: Props) {
               </svg>
             </button>
           </div>
+
+          {/* Quick view overlay */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center pointer-events-none">
+            <Link
+              href={`/items/${item.id}`}
+              className="opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100 transition-all duration-300 bg-white/95 backdrop-blur-sm text-gray-900 px-4 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl pointer-events-auto"
+            >
+              Detayları Gör
+            </Link>
+          </div>
         </div>
 
         {/* Content */}
-        <Link
-          href={`/items/${item.id}`}
-          className="block p-4 hover:bg-gray-50 transition-colors"
-        >
-          <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-600 transition-colors">
-            {item.title}
-          </h3>
+        <div className="p-6">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="font-bold text-lg text-gray-900 line-clamp-2 leading-tight">
+              {item.title}
+            </h3>
+          </div>
 
-          {item.description && (
-            <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-              {item.description}
-            </p>
-          )}
+          <p className="text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed">
+            {item.description}
+          </p>
 
-          {/* Location and Category */}
-          <div className="flex items-center gap-4 mb-3 text-sm text-gray-500">
-            <div className="flex items-center gap-1">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
               <svg
                 className="w-4 h-4"
                 fill="none"
@@ -173,8 +187,16 @@ export function UserItemCard({ item, onUpdate, onDelete }: Props) {
               </svg>
               <span>{getCityLabel()}</span>
             </div>
+            <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
+              {getCategoryLabel()}
+            </span>
+          </div>
 
-            <div className="flex items-center gap-1">
+          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+            <span className="text-sm text-gray-500">
+              {formatDate(item.created_at)}
+            </span>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
               <svg
                 className="w-4 h-4"
                 fill="none"
@@ -185,31 +207,26 @@ export function UserItemCard({ item, onUpdate, onDelete }: Props) {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                 />
               </svg>
-              <span>{getCategoryLabel()}</span>
+              <span>-</span>
             </div>
           </div>
-
-          {/* Date and Status */}
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-500">
-              {item.is_deal ? "İlan pasif durumda" : "Takas için uygun"}
-            </div>
-
-            <div className="text-xs text-gray-400">
-              {formatDate(item.created_at)}
-            </div>
-          </div>
-        </Link>
+        </div>
       </div>
 
       {/* Edit Modal */}
       {showEditModal && (
         <EditItemModal
-          isOpen={showEditModal}
           item={item}
+          isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
           onSuccess={handleEditSuccess}
         />
