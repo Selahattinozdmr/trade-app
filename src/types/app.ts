@@ -104,3 +104,38 @@ export interface ProfileFormData {
   phone: string;
   avatar_url?: string;
 }
+
+// Message types
+export interface Message {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  created_at: string;
+  read_at?: string;
+}
+
+export interface Conversation {
+  id: string;
+  user1_id: string;
+  user2_id: string;
+  created_at: string;
+  updated_at: string;
+  // Joined user data
+  user1?: User;
+  user2?: User;
+  // Latest message
+  latest_message?: Message;
+  // Unread count for current user
+  unread_count?: number;
+}
+
+export interface ConversationWithMessages extends Conversation {
+  messages: Message[];
+}
+
+// Message form types
+export interface SendMessageData {
+  content: string;
+  conversation_id: string;
+}
