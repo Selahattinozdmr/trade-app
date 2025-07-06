@@ -26,9 +26,9 @@ export function ItemCard({ item }: Props) {
 
   return (
     <Link href={`/items/${item.id}`} className="block">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group min-h-[400px] flex flex-col">
         {/* Image */}
-        <div className="relative aspect-[4/3] bg-gray-100">
+        <div className="relative aspect-[4/3] bg-gray-100 flex-shrink-0">
           {item.image_url ? (
             <Image
               src={item.image_url}
@@ -70,19 +70,19 @@ export function ItemCard({ item }: Props) {
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="p-4 flex-1 flex flex-col">
           <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-600 transition-colors">
             {item.title}
           </h3>
 
-          {item.description && (
+          {item.short_description && (
             <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-              {item.description}
+              {item.short_description}
             </p>
           )}
 
           {/* Location and Category */}
-          <div className="flex items-center gap-4 mb-3 text-sm text-gray-500">
+          <div className="flex items-center gap-4 mb-3 text-sm text-gray-500 flex-1">
             <div className="flex items-center gap-1">
               <svg
                 className="w-4 h-4"
@@ -125,7 +125,7 @@ export function ItemCard({ item }: Props) {
           </div>
 
           {/* Date and Status */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mt-auto">
             <div className="text-sm text-gray-500">
               {item.is_deal ? "İlan pasif durumda" : "Takas için uygun"}
             </div>

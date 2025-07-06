@@ -1,4 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import type { User } from "@/types/app";
 
 export async function uploadAvatar(
   supabase: SupabaseClient,
@@ -70,4 +71,37 @@ export async function updateUserAvatar(
       error: "Profil güncelleme sırasında hata oluştu",
     };
   }
+}
+
+export function getDisplayName(user: User): string {
+  // Priority: display_name > full_name > email prefix > user ID suffix
+  if (user.display_name) return user.display_name;
+  if (user.full_name) return user.full_name;
+  if (user.email) {
+    const emailParts = user.email.split("@");
+    if (emailParts.length > 0 && emailParts[0]) return emailParts[0];
+  }
+  // Fallback to user ID suffix as last resort
+  return `Kullanıcı ${user.id.slice(-4)}`;
+}
+
+export function getInitials(name?: string, email?: string): string {
+  if (name) {
+    return name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  }
+  return email?.charAt(0).toUpperCase() || "U";
+}
+
+export function getAvatarUrl(user: User): string {
+  return (
+    user.avatar_url ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      getDisplayName(user)
+    )}&background=f97316&color=ffffff`
+  );
 }

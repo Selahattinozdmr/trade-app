@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getUserConversations } from "@/features/messages";
-import { ConversationList } from "@/features/messages/components/ConversationList";
+import { ConversationListClientWrapper } from "@/features/messages/components/ConversationListClientWrapper";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 import type { User } from "@/types/app";
 import type { Metadata } from "next";
@@ -51,8 +51,8 @@ async function ConversationListWrapper({ user }: { user: User }) {
   }
 
   return (
-    <ConversationList
-      conversations={result.data || []}
+    <ConversationListClientWrapper
+      initialConversations={result.data || []}
       currentUserId={user.id}
     />
   );
@@ -89,12 +89,12 @@ export default async function MessagesPage() {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
       {/* Header */}
       <div className="bg-white/70 backdrop-blur-lg border-b border-orange-100/50 relative z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
           <div className="flex items-center justify-between">
-            <Link href={`/messages`} className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center">
+            <div className="flex items-center space-x-3 lg:space-x-4">
+              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-white"
+                  className="w-5 h-5 lg:w-6 lg:h-6 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -108,12 +108,14 @@ export default async function MessagesPage() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Mesajlar</h1>
-                <p className="text-gray-600">
+                <h1 className="text-xl lg:text-2xl font-bold text-gray-900">
+                  Mesajlar
+                </h1>
+                <p className="text-sm lg:text-base text-gray-600 hidden sm:block">
                   İletişim kurduğunuz kullanıcılarla mesajlaşın
                 </p>
               </div>
-            </Link>
+            </div>
 
             {/* User Profile Avatar */}
             <ProfileAvatar user={appUser} />
@@ -121,25 +123,27 @@ export default async function MessagesPage() {
         </div>
       </div>{" "}
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-8 relative z-10">
         <div
           className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/50 shadow-sm overflow-hidden relative z-10"
-          style={{ height: "calc(100vh - 200px)" }}
+          style={{ height: "calc(100vh - 140px)", minHeight: "500px" }}
         >
           <div className="grid grid-cols-1 lg:grid-cols-3 h-full">
-            {/* Conversations List */}
-            <div className="lg:col-span-1 border-r border-gray-200 relative z-10">
-              <div className="p-4 border-b border-gray-200">
+            {/* Conversations List - Full width on mobile, 1/3 on desktop */}
+            <div className="lg:col-span-1 border-r border-gray-200 relative z-10 flex flex-col">
+              <div className="hidden lg:block p-4 border-b border-gray-200">
                 <h2 className="text-lg font-semibold text-gray-900">
                   Konuşmalar
                 </h2>
               </div>
-              <Suspense fallback={<ConversationsLoading />}>
-                <ConversationListWrapper user={appUser} />
-              </Suspense>
+              <div className="flex-1 overflow-hidden min-h-0">
+                <Suspense fallback={<ConversationsLoading />}>
+                  <ConversationListWrapper user={appUser} />
+                </Suspense>
+              </div>
             </div>
 
-            {/* Empty State */}
+            {/* Empty State - Only show on desktop */}
             <div className="lg:col-span-2 hidden lg:flex items-center justify-center bg-gray-50 relative z-10">
               <div className="text-center text-gray-500">
                 <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">

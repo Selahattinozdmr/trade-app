@@ -47,7 +47,9 @@ async function fetchUserData(userId: string): Promise<User | null> {
       full_name: user.user_metadata?.full_name,
       display_name: user.user_metadata?.display_name,
       phone: user.user_metadata?.phone,
-      avatar_url: user.user_metadata?.avatar_url,
+      // Prioritize custom avatar over regular avatar
+      avatar_url:
+        user.user_metadata?.custom_avatar_url || user.user_metadata?.avatar_url,
       user_metadata: user.user_metadata,
     };
   } catch (error) {
@@ -346,8 +348,13 @@ export async function getUserById(userId: string): Promise<{
       return { success: true, data: currentUser };
     }
 
-    // For other users, create a basic user object
-    // The UI will handle display logic appropriately
+    // For other users, fetch their actual data
+    const userData = await fetchUserData(userId);
+    if (userData) {
+      return { success: true, data: userData };
+    }
+
+    // Fallback to basic user object if fetch fails
     const user: User = {
       id: userId,
       email: "",

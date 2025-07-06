@@ -18,6 +18,7 @@ export async function createItem(itemData: CreateItemData): Promise<Item> {
       user_id: user.id,
       title: itemData.title,
       description: itemData.description,
+      short_description: itemData.short_description,
       category_id: itemData.category_id,
       city_id: itemData.city_id,
       image_url: itemData.image_url,
@@ -113,15 +114,30 @@ export async function updateItem(
     throw new Error("Unauthorized: Please sign in to update an item");
   }
 
+  // Debug logging
+  console.log("Updating item with data:", itemData);
+  console.log("is_deal value:", itemData.is_deal);
+
+  // Build update object with only defined values
+  const updateData: Record<string, any> = {};
+
+  if (itemData.title !== undefined) updateData.title = itemData.title;
+  if (itemData.description !== undefined)
+    updateData.description = itemData.description;
+  if (itemData.short_description !== undefined)
+    updateData.short_description = itemData.short_description;
+  if (itemData.category_id !== undefined)
+    updateData.category_id = itemData.category_id;
+  if (itemData.city_id !== undefined) updateData.city_id = itemData.city_id;
+  if (itemData.image_url !== undefined)
+    updateData.image_url = itemData.image_url;
+  if (itemData.is_deal !== undefined) updateData.is_deal = itemData.is_deal;
+
+  console.log("Update data being sent to Supabase:", updateData);
+
   const { data, error } = await supabase
     .from("items")
-    .update({
-      title: itemData.title,
-      description: itemData.description,
-      category_id: itemData.category_id,
-      city_id: itemData.city_id,
-      image_url: itemData.image_url,
-    })
+    .update(updateData)
     .eq("id", itemId)
     .eq("user_id", user.id) // Ensure user can only update their own items
     .select(
@@ -134,9 +150,11 @@ export async function updateItem(
     .single();
 
   if (error) {
+    console.error("Supabase update error:", error);
     throw new Error(error.message);
   }
 
+  console.log("Updated item from database:", data);
   return data;
 }
 

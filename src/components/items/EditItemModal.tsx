@@ -36,6 +36,7 @@ export function EditItemModal({
   const [formData, setFormData] = useState<CreateItemData>({
     title: "",
     description: "",
+    short_description: "",
     category_id: "",
     image_url: "",
     is_deal: false,
@@ -47,6 +48,7 @@ export function EditItemModal({
       const formInitialData: CreateItemData = {
         title: item.title,
         description: item.description || "",
+        short_description: item.short_description || "",
         category_id: item.category_id || "",
         image_url: item.image_url || "",
         is_deal: item.is_deal,
@@ -99,10 +101,13 @@ export function EditItemModal({
       };
 
       // Add optional fields only if they have values
-      if (formData.description) {
+      if (formData.description && formData.description.trim()) {
         itemData.description = formData.description;
       }
-      if (formData.category_id) {
+      if (formData.short_description && formData.short_description.trim()) {
+        itemData.short_description = formData.short_description;
+      }
+      if (formData.category_id && formData.category_id.trim()) {
         itemData.category_id = formData.category_id;
       }
       if (formData.city_id) {
@@ -143,8 +148,6 @@ export function EditItemModal({
           ? value
             ? parseInt(value)
             : undefined
-          : value === ""
-          ? undefined
           : value,
     }));
   };
@@ -192,16 +195,49 @@ export function EditItemModal({
           >
             Başlık *
           </label>
+          <span className="text-gray-500 text-xs ml-1">
+            (maks. 50 karakter)
+          </span>
           <input
             type="text"
             id="title"
             name="title"
             required
-            value={formData.title}
+            value={formData.title || ""}
+            maxLength={50}
             onChange={handleInputChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
             placeholder="İlan başlığını girin"
           />
+          <div className="text-right text-xs text-gray-500 mt-1">
+            {(formData.title || "").length}/50
+          </div>
+        </div>
+
+        {/* Short Description */}
+        <div>
+          <label
+            htmlFor="short_description"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Kısa Açıklama
+            <span className="text-gray-500 text-xs ml-1">
+              (maks. 100 karakter)
+            </span>
+          </label>
+          <input
+            type="text"
+            id="short_description"
+            name="short_description"
+            maxLength={100}
+            value={formData.short_description || ""}
+            onChange={handleInputChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            placeholder="İlan için kısa bir açıklama girin"
+          />
+          <div className="text-right text-xs text-gray-500 mt-1">
+            {(formData.short_description || "").length}/100
+          </div>
         </div>
 
         {/* Description */}
@@ -216,7 +252,7 @@ export function EditItemModal({
             id="description"
             name="description"
             rows={4}
-            value={formData.description}
+            value={formData.description || ""}
             onChange={handleInputChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
             placeholder="İlan açıklamasını girin"
@@ -234,7 +270,7 @@ export function EditItemModal({
           <select
             id="category_id"
             name="category_id"
-            value={formData.category_id}
+            value={formData.category_id || ""}
             onChange={handleInputChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
           >
@@ -344,7 +380,7 @@ export function EditItemModal({
           >
             İptal
           </Button>
-          <Button type="submit" disabled={isLoading || !formData.title.trim()}>
+          <Button type="submit" disabled={isLoading || !formData.title?.trim()}>
             {isUploading
               ? "Resim yükleniyor..."
               : isLoading

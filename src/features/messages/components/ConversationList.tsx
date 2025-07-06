@@ -1,6 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Conversation, User } from "@/types/app";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { getDisplayName } from "@/utils/avatar";
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -16,27 +17,6 @@ function getConversationPartner(
     return conversation.user2 || null;
   }
   return conversation.user1 || null;
-}
-
-function getDisplayName(user: User): string {
-  // Priority: display_name > full_name > email prefix > user ID suffix
-  if (user.display_name) return user.display_name;
-  if (user.full_name) return user.full_name;
-  if (user.email) {
-    const emailParts = user.email.split("@");
-    if (emailParts.length > 0 && emailParts[0]) return emailParts[0];
-  }
-  // Fallback to user ID suffix as last resort
-  return `Kullanıcı ${user.id.slice(-4)}`;
-}
-
-function getAvatarUrl(user: User): string {
-  return (
-    user.avatar_url ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      getDisplayName(user)
-    )}&background=f97316&color=ffffff`
-  );
 }
 
 function formatTimeAgo(dateString: string): string {
@@ -65,7 +45,7 @@ export function ConversationList({
 }: ConversationListProps) {
   if (conversations.length === 0) {
     return (
-      <div className="h-full flex items-center justify-center text-gray-500">
+      <div className="h-full flex items-center justify-center text-gray-500 p-4">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
             <svg
@@ -92,77 +72,86 @@ export function ConversationList({
   }
 
   return (
-    <div className="h-full overflow-y-auto">
-      {conversations.map((conversation) => {
-        const partner = getConversationPartner(conversation, currentUserId);
+    <div className="h-full bg-white">
+      {/* Mobile header - only show when no conversation is selected */}
+      <div className="lg:hidden bg-white border-b border-gray-200 p-4 sticky top-0 z-10">
+        <h2 className="text-lg font-semibold text-gray-900">Konuşmalar</h2>
+      </div>
 
-        if (!partner) return null;
+      {/* Conversation list */}
+      <div
+        className="h-full overflow-y-auto bg-white"
+        style={{
+          scrollbarWidth: "thin",
+          scrollbarColor: "#cbd5e0 transparent",
+        }}
+      >
+        {conversations.map((conversation) => {
+          const partner = getConversationPartner(conversation, currentUserId);
 
-        const isSelected = selectedUserId === partner.id;
-        const displayName = getDisplayName(partner);
-        const avatarUrl = getAvatarUrl(partner);
-        const hasUnread = (conversation.unread_count || 0) > 0;
+          if (!partner) return null;
 
-        return (
-          <Link
-            key={conversation.id}
-            href={`/messages/${partner.id}`}
-            className={`block p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-              isSelected ? "bg-orange-50 border-orange-200" : ""
-            }`}
-          >
-            <div className="flex items-center space-x-3">
-              <div className="relative">
-                <Image
-                  src={avatarUrl}
-                  alt={displayName}
-                  width={48}
-                  height={48}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                {hasUnread && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
-                    <span className="text-xs text-white font-medium">
-                      {conversation.unread_count! > 9
-                        ? "9+"
-                        : conversation.unread_count}
-                    </span>
-                  </div>
-                )}
-              </div>
+          const isSelected = selectedUserId === partner.id;
+          const displayName = getDisplayName(partner);
+          const hasUnread = (conversation.unread_count || 0) > 0;
 
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <h3
-                    className={`text-sm font-medium truncate ${
-                      hasUnread ? "text-gray-900" : "text-gray-700"
-                    }`}
-                  >
-                    {displayName}
-                  </h3>
-                  {conversation.latest_message && (
-                    <span className="text-xs text-gray-500 ml-2">
-                      {formatTimeAgo(conversation.latest_message.created_at)}
-                    </span>
+          return (
+            <Link
+              key={conversation.id}
+              href={`/messages/${partner.id}`}
+              className={`block p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                isSelected ? "bg-orange-50 border-orange-200" : ""
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <UserAvatar user={partner} size="lg" />
+                  {hasUnread && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
+                      <span className="text-xs text-white font-medium">
+                        {conversation.unread_count! > 9
+                          ? "9+"
+                          : conversation.unread_count}
+                      </span>
+                    </div>
                   )}
                 </div>
 
-                {conversation.latest_message && (
-                  <p
-                    className={`text-sm truncate mt-1 ${
-                      hasUnread ? "text-gray-900 font-medium" : "text-gray-500"
-                    }`}
-                  >
-                    {conversation.latest_message.sender_id === currentUserId &&
-                      "Sen: "}
-                    {conversation.latest_message.content}
-                  </p>
-                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h3
+                      className={`text-sm font-medium truncate ${
+                        hasUnread ? "text-gray-900" : "text-gray-700"
+                      }`}
+                    >
+                      {displayName}
+                    </h3>
+                    {conversation.latest_message && (
+                      <span className="text-xs text-gray-500 ml-2">
+                        {formatTimeAgo(conversation.latest_message.created_at)}
+                      </span>
+                    )}
+                  </div>
+
+                  {conversation.latest_message && (
+                    <p
+                      className={`text-sm truncate mt-1 ${
+                        hasUnread
+                          ? "text-gray-900 font-medium"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      {conversation.latest_message.sender_id ===
+                        currentUserId && "Sen: "}
+                      {conversation.latest_message.content}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          </Link>
-        );
-      })}
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

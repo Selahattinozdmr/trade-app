@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import { sendMessage, markMessagesAsRead } from "../actions";
 import type { Message, User } from "@/types/app";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { getDisplayName } from "@/utils/avatar";
+import Link from "next/link";
 
 interface MessageThreadProps {
   messages: Message[];
@@ -11,27 +13,6 @@ interface MessageThreadProps {
   conversationId: string;
   partner: User;
   onMessageSent?: () => void;
-}
-
-function getDisplayName(user: User): string {
-  // Priority: display_name > full_name > email prefix > user ID suffix
-  if (user.display_name) return user.display_name;
-  if (user.full_name) return user.full_name;
-  if (user.email) {
-    const emailParts = user.email.split("@");
-    if (emailParts.length > 0 && emailParts[0]) return emailParts[0];
-  }
-  // Fallback to user ID suffix as last resort
-  return `Kullanıcı ${user.id.slice(-4)}`;
-}
-
-function getAvatarUrl(user: User): string {
-  return (
-    user.avatar_url ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      getDisplayName(user)
-    )}&background=f97316&color=ffffff`
-  );
 }
 
 function formatMessageTime(dateString: string): string {
@@ -72,17 +53,38 @@ export function MessageThread({
 }: MessageThreadProps) {
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const partnerDisplayName = getDisplayName(partner);
-  const partnerAvatarUrl = getAvatarUrl(partner);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
+  };
+
+  const isNearBottom = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return true;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    return scrollHeight - scrollTop - clientHeight < 100; // Within 100px of bottom
+  };
+
+  const handleScroll = () => {
+    setShouldAutoScroll(isNearBottom());
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // Only auto-scroll if user is near bottom or it's a new conversation
+    if (shouldAutoScroll || messages.length <= 1) {
+      scrollToBottom();
+    }
+  }, [messages, shouldAutoScroll]);
+
+  useEffect(() => {
+    // Initial scroll to bottom (instant)
+    scrollToBottom("instant");
+  }, []);
 
   useEffect(() => {
     // Mark messages as read when conversation is opened
@@ -109,6 +111,9 @@ export function MessageThread({
 
       if (result.success) {
         onMessageSent?.();
+        // Ensure auto-scroll is enabled and scroll to bottom when user sends message
+        setShouldAutoScroll(true);
+        setTimeout(() => scrollToBottom(), 100); // Small delay to ensure message is rendered
       } else {
         console.error("Failed to send message:", result.error);
         // Restore message if failed
@@ -124,17 +129,31 @@ export function MessageThread({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="w-full h-full flex flex-col relative">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-4">
+      <div className="bg-white border-b border-gray-200 p-4 flex-shrink-0">
         <div className="flex items-center space-x-3">
-          <Image
-            src={partnerAvatarUrl}
-            alt={partnerDisplayName}
-            width={40}
-            height={40}
-            className="w-10 h-10 rounded-full object-cover"
-          />
+          {/* Back button for mobile */}
+          <Link
+            href="/messages"
+            className="lg:hidden flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <svg
+              className="w-5 h-5 text-gray-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </Link>
+
+          <UserAvatar user={partner} size="md" />
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
               {partnerDisplayName}
@@ -145,7 +164,15 @@ export function MessageThread({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div
+        ref={messagesContainerRef}
+        className="flex-grow overflow-y-auto p-4 space-y-4 bg-gray-50 scroll-smooth"
+        onScroll={handleScroll}
+        style={{
+          scrollbarWidth: "thin",
+          scrollbarColor: "#cbd5e0 transparent",
+        }}
+      >
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
@@ -178,10 +205,10 @@ export function MessageThread({
                 className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg shadow-sm ${
                     isOwn
                       ? "bg-orange-500 text-white"
-                      : "bg-gray-100 text-gray-900"
+                      : "bg-white text-gray-900 border border-gray-200"
                   }`}
                 >
                   <p className="text-sm">{message.content}</p>
@@ -200,10 +227,38 @@ export function MessageThread({
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Scroll to Bottom Button */}
+      {!shouldAutoScroll && (
+        <div className="absolute bottom-20 right-6 z-10">
+          <button
+            onClick={() => {
+              scrollToBottom();
+              setShouldAutoScroll(true);
+            }}
+            className="p-3 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+            aria-label="Scroll to bottom"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 14l-7 7m0 0l-7-7m7 7V3"
+              />
+            </svg>
+          </button>
+        </div>
+      )}
+
       {/* Message Input */}
       <form
         onSubmit={handleSendMessage}
-        className="bg-white border-t border-gray-200 p-4"
+        className="bg-white border-t border-gray-200 p-4 flex-shrink-0"
       >
         <div className="flex items-center space-x-2">
           <input

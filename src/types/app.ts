@@ -41,6 +41,7 @@ export interface Item {
   city_id?: number;
   title: string;
   description?: string;
+  short_description?: string;
   image_url?: string;
   is_deal: boolean;
   created_at: string;
@@ -57,6 +58,7 @@ export interface Item {
 export interface CreateItemData {
   title: string;
   description?: string;
+  short_description?: string;
   category_id?: string;
   city_id?: number;
   image_url?: string;
