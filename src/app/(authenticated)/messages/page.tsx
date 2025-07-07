@@ -6,7 +6,6 @@ import { ConversationListClientWrapper } from "@/features/messages/components/Co
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 import type { User } from "@/types/app";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Mesajlar - Takas Go",

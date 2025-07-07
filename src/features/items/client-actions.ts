@@ -114,12 +114,8 @@ export async function updateItem(
     throw new Error("Unauthorized: Please sign in to update an item");
   }
 
-  // Debug logging
-  console.log("Updating item with data:", itemData);
-  console.log("is_deal value:", itemData.is_deal);
-
   // Build update object with only defined values
-  const updateData: Record<string, any> = {};
+  const updateData: Record<string, string | number | boolean | null | undefined> = {};
 
   if (itemData.title !== undefined) updateData.title = itemData.title;
   if (itemData.description !== undefined)

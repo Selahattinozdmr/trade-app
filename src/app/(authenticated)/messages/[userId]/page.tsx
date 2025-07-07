@@ -12,7 +12,6 @@ import { MessageThreadClientWrapper } from "@/features/messages/components/Messa
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 import type { User } from "@/types/app";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 interface MessagesPageProps {
   params: Promise<{ userId: string }>;
