@@ -115,7 +115,10 @@ export async function updateItem(
   }
 
   // Build update object with only defined values
-  const updateData: Record<string, string | number | boolean | null | undefined> = {};
+  const updateData: Record<
+    string,
+    string | number | boolean | null | undefined
+  > = {};
 
   if (itemData.title !== undefined) updateData.title = itemData.title;
   if (itemData.description !== undefined)
